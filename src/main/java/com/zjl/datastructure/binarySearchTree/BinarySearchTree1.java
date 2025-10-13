@@ -45,6 +45,39 @@ public class BinarySearchTree1 {
         }
     }
 
+//    /**
+//     * 查找关键字对应的值
+//     *
+//     * @param key 关键字
+//     * @return    关键字对应的值
+//     */
+//    public Object get(int key) {
+//        return doGet(root, key);
+//    }
+//
+//    /**
+//     * 每个节点的查找逻辑都是一样的，这个时候就可以用递归来求解
+//     *
+//     * @param node 待比较的节点
+//     * @param key  关键字
+//     */
+//    private Object doGet(BinarySearchTreeNode node, int key) {
+//        if (node == null) {
+//            return null;
+//        }
+//
+//        if (key < node.key) {
+//            // key比目前的节点值小，向左找
+//            return doGet(node.left, key);
+//        } else if (key > node.key) {
+//            // key比目前的节点值要大，那么就向右找
+//            return doGet(node.right, key);
+//        } else {
+//            // 相等就返回目前的节点值
+//            return node.value;
+//        }
+//    }
+
     /**
      * 查找关键字对应的值
      *
@@ -52,31 +85,20 @@ public class BinarySearchTree1 {
      * @return    关键字对应的值
      */
     public Object get(int key) {
-        return doGet(root, key);
+        BinarySearchTreeNode node = root;
+        while (node != null) {
+            if (key < node.key) {
+                node = node.left;
+            } else if (node.key < key) {
+                node = node.right;
+            } else {
+                return node.value;
+            }
+        }
+        return null;
     }
 
-    /**
-     * 每个节点的查找逻辑都是一样的，这个时候就可以用递归来求解
-     *
-     * @param node 待比较的节点
-     * @param key  关键字
-     */
-    private Object doGet(BinarySearchTreeNode node, int key) {
-        if (node == null) {
-            return null;
-        }
 
-        if (key < node.key) {
-            // key比目前的节点值小，向左找
-            return doGet(node.left, key);
-        } else if (key > node.key) {
-            // key比目前的节点值要大，那么就向右找
-            return doGet(node.right, key);
-        } else {
-            // 相等就返回目前的节点值
-            return node.value;
-        }
-    }
 
     /**
      * 查找最小的 key 的对应值
