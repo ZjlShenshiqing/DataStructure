@@ -32,9 +32,9 @@ public class BinarySearchTree1 {
             this.key = key;
         }
 
-        public BinarySearchTreeNode(Object value, int key) {
-            this.value = value;
+        public BinarySearchTreeNode(int key, Object value) {
             this.key = key;
+            this.value = value;
         }
 
         public BinarySearchTreeNode(int key, Object value, BinarySearchTreeNode left, BinarySearchTreeNode right) {
@@ -99,14 +99,21 @@ public class BinarySearchTree1 {
     }
 
 
-
     /**
      * 查找最小的 key 的对应值
      *
      * @return 查找最小的 key 的对应值
      */
     public Object min() {
-        return null;
+        if (root == null) {
+            return null;
+        }
+        BinarySearchTreeNode node = root;
+
+        while (node.left != null) {
+            node = node.left;
+        }
+        return node.value;
     }
 
     /**
@@ -115,7 +122,14 @@ public class BinarySearchTree1 {
      * @return 查找最大的 key 的对应值
      */
     public Object max() {
-        return null;
+        if (root == null) {
+            return null;
+        }
+        BinarySearchTreeNode node = root;
+        while (node.right != null) {
+            node = node.right;
+        }
+        return node.value;
     }
 
     /**
@@ -125,7 +139,29 @@ public class BinarySearchTree1 {
      * @param value 对应的值
      */
     public void put(int key, Object value) {
-
+        BinarySearchTreeNode node = root;
+        BinarySearchTreeNode parent = null;
+        while (node != null) {
+            parent = node; // parent就是更新前的值，就比如最后走出去就是null了，parent就是上一个节点
+            if (key < node.key) {
+                node = node.left;
+            } else if (node.key < key) {
+                node = node.right;
+            } else {
+                // key 有，更新值
+                node.value = value;
+                return;
+            }
+        }
+        if (parent == null) { // 树整个为空
+            root = new BinarySearchTreeNode(key, value);
+        }
+        if (key < parent.key) {
+            // key 没有，新增，是parent的左孩子
+            parent.left = new BinarySearchTreeNode(key, value);
+        } else if (key > parent.key) {
+            parent.right = new BinarySearchTreeNode(key, value);
+        }
     }
 
     /**
