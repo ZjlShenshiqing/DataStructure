@@ -105,15 +105,25 @@ public class BinarySearchTree1 {
      * @return 查找最小的 key 的对应值
      */
     public Object min() {
-        if (root == null) {
+        return min(root);
+    }
+
+    /**
+     * 在以指定节点为根的二叉搜索树（BST）中，查找具有最小 key 的节点，
+     * 并返回该节点所关联的值（value）。
+     *
+     * @param node 二叉搜索树的根节点（可以是整棵树的根，也可以是某个子树的根）
+     * @return 最小 key 对应的 value；如果树为空（node 为 null），则返回 null
+     */
+    public Object min(BinarySearchTreeNode node) {
+        if (node == null) {
             return null;
         }
-        BinarySearchTreeNode node = root;
-
-        while (node.left != null) {
-            node = node.left;
+        BinarySearchTreeNode p = node;
+        while (p.left != null) {
+            p = p.left;
         }
-        return node.value;
+        return p.value;
     }
 
     /**
@@ -122,14 +132,25 @@ public class BinarySearchTree1 {
      * @return 查找最大的 key 的对应值
      */
     public Object max() {
-        if (root == null) {
+        return max(root);
+    }
+
+    /**
+     * 在以指定节点为根的二叉搜索树（BST）中，查找具有最大 key 的节点，
+     * 并返回该节点所关联的值（value）。
+     *
+     * @param node 二叉搜索树的根节点（可以是整棵树的根，也可以是某个子树的根）
+     * @return 最大 key 对应的 value；如果树为空（node 为 null），则返回 null
+     */
+    public Object max(BinarySearchTreeNode node) {
+        if (node == null) {
             return null;
         }
-        BinarySearchTreeNode node = root;
-        while (node.right != null) {
-            node = node.right;
+        BinarySearchTreeNode p = node;
+        while (p.right != null) {
+            p = p.right;
         }
-        return node.value;
+        return p.value;
     }
 
     /**
@@ -165,13 +186,47 @@ public class BinarySearchTree1 {
     }
 
     /**
+     * 查找关键字的前任值
      * 通过这个 key 查找上一个 key
      *
      * @param key 关键字
      * @return    这个key的上一个key
      */
     public Object successor(int key) {
-        return null;
+        BinarySearchTreeNode node = root;
+
+        // 自左而来的祖先
+        BinarySearchTreeNode ancestorFromLeft = null;
+
+        // 没有找到节点的情况
+        if (node == null) {
+            return null;
+        }
+
+        // 通过key找到节点的代码
+        while (node != null) {
+            if (key < node.key) {
+                node = node.left;
+            } else if (key > node.key) {
+                // 向右走，代表祖先是自左而来的
+                ancestorFromLeft = node;
+                node = node.right;
+            } else {
+                break;
+            }
+        }
+
+        /**
+         * 情况1：如果节点有左子树，此时前任就是左子树的最大值
+         * 情况2：如果节点没有左子树，此时离他最近的，从左来的就是他的前任
+         */
+        // 情况1
+        if (node.left != null) {
+            return max(node.left);
+        }
+
+        // 情况2: 找从左而来的祖先
+        return ancestorFromLeft != null ? ancestorFromLeft.value : null;
     }
 
     /**
@@ -181,7 +236,38 @@ public class BinarySearchTree1 {
      * @return    这个key的下一个key
      */
     public Object predecessor(int key) {
-        return null;
+        BinarySearchTreeNode node = root;
+        BinarySearchTreeNode ancestorFromRight = null;
+
+        // 没有找到节点的情况
+        if (node == null) {
+            return null;
+        }
+
+        // 通过key找到节点的代码
+        while (node != null) {
+            if (key < node.key) {
+                // 向左走，代表祖先是自右而来的
+                ancestorFromRight = node;
+                node = node.left;
+            } else if (key > node.key) {
+                node = node.right;
+            } else {
+                break;
+            }
+        }
+
+        /**
+         * 情况1：如果节点有右子树，此时前任就是右子树的最大值
+         * 情况2：如果节点没有右子树，此时离他最近的，从右来的就是他的前任
+         */
+        // 情况1
+        if (node.right != null) {
+            return min(node.right);
+        }
+
+        // 情况2: 找从左而来的祖先
+        return ancestorFromRight != null ? ancestorFromRight.value : null;
     }
 
     /**
