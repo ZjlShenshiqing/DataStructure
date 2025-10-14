@@ -278,6 +278,91 @@ public class BinarySearchTree1 {
      * @return    被删除关键字对应的值
      */
     public Object delete(int key) {
-        return null;
+        BinarySearchTreeNode node = root;
+        BinarySearchTreeNode parent = null;
+        while (node != null) {
+            if (key < node.key) {
+                parent = node; // 删除节点之前要找到TA的parent
+                node = node.left;
+            } else if (key > node.key) {
+                parent = node; // 删除节点之前要找到TA的parent
+                node = node.right;
+            } else {
+                break;
+            }
+        }
+
+        if (node == null) {
+            // 节点没有找到，直接返回空
+            return null;
+        }
+
+        // 进行删除操作
+        if (node.left == null) {
+            // 情况1：删除节点没有左孩子，将右孩子托孤给 Parent
+            shift(parent, node, node.right);
+        } else if (node.right == null) {
+            // 情况2：删除节点没有右孩子，将左孩子托孤给 Parent
+            shift(parent, node, node.left);
+        } else { // 情况3：删除节点左右孩子都有
+            // 在右子树中查找 node 的“中序后继”（即右子树中的最小节点）
+            BinarySearchTreeNode s = node.right;      // 后继节点候选：从右孩子开始
+            BinarySearchTreeNode sParent = node;      // s 的父节点，初始为 node
+            while (s.left != null) {
+                sParent = s; // 更新父亲的值
+                s = s.left;
+            }
+            // 循环结束后，s就是后继节点
+
+            // 如果后继节点 s 不是 node 的直接右孩子（即 sParent != node）
+            if (sParent != node) {
+                // 那么 s 一定没有左孩子（由 BST 性质决定），但可能有右孩子
+                // 将 s 的右孩子“托孤”给 sParent（即用 s.right 替代 s 的位置）
+                shift(sParent, s, s.right);
+
+                // 将原 node 的右子树挂到 s 的右边（因为 s 要取代 node）
+                s.right = node.right;
+            }
+
+            // 注意：如果 s 是 node 的直接右孩子（sParent == node），
+            // 那么 s 本来就在正确位置，无需调整其右子树
+            // 用后继节点 s 完全取代被删除节点 node 的位置
+            shift(parent, node, s);
+
+            // 将原 node 的左子树挂到 s 的左边
+            s.left = node.left;
+        }
+
+        // 删除的节点值
+        return node.value;
+    }
+
+    /**
+     * 托孤操作：在删除节点后，将被删除节点的子节点“托付”给其父节点，
+     * 从而维持二叉搜索树的结构连续性。
+     *
+     * 该方法的作用是：将 deleted 节点从树中移除，并用 child 节点替代它在父节点中的位置。
+     * 这常用于 BST 删除操作中，当被删除节点最多只有一个子节点时（即 child 可能为 null 或一个子树）。
+     *
+     * @param parent  被删除节点（deleted）的父节点；若 deleted 是根节点，则 parent 为 null
+     * @param deleted 要被删除的节点
+     * @param child   被顶上去的节点
+     */
+    private void shift(BinarySearchTreeNode parent, BinarySearchTreeNode deleted, BinarySearchTreeNode child) {
+        // 情况1：被删除的节点是整棵树的根节点（即 parent == null）
+        if (parent == null) {
+            // 直接将 child 作为新的根节点（child 可能为 null，此时树变为空）
+            root = child;
+        }
+        // 情况2：被删除的节点是其父节点的左孩子
+        else if (deleted == parent.left) {
+            // 将父节点的 left 指针指向 child，完成“托孤”
+            parent.left = child;
+        }
+        // 情况3：被删除的节点是其父节点的右孩子
+        else {
+            // 将父节点的 right 指针指向 child
+            parent.right = child;
+        }
     }
 }
