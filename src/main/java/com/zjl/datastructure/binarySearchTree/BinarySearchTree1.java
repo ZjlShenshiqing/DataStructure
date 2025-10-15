@@ -415,15 +415,17 @@ public class BinarySearchTree1 {
         while (node != null || !stack.isEmpty()) {
             if (node != null) {
                 stack.push(node);
-                node = node.left; // 向左走
+                node = node.right; // 向右走到头
             } else {
                 BinarySearchTreeNode pop = stack.pop();// 弹栈
                 // 处理值
                 if (pop.key > key) {
                     result.add(pop.value);
-                } // 要一直遍历到最后
-                // 处理右边的节点
-                node = pop.right;
+                } else {
+                    break; // 找到了全部比TA大的，可以直接退出循环了
+                }
+                // 处理左边的节点
+                node = pop.left;
             }
         }
         return result;
