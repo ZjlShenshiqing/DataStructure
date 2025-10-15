@@ -1,5 +1,9 @@
 package com.zjl.datastructure.binarySearchTree;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * 二叉搜索树实现方式1
  *
@@ -364,5 +368,93 @@ public class BinarySearchTree1 {
             // 将父节点的 right 指针指向 child
             parent.right = child;
         }
+    }
+
+    // 对于二叉搜索树来讲，中序遍历，就能得到TA的一个升序的结果
+
+
+    /**
+     * 找到比 key 小的所有节点
+     * 思路就是先进行中序遍历把二叉搜索树的节点进行排序
+     *
+     */
+    public List<Object> less(int key) {
+        ArrayList<Object> result = new ArrayList<>();
+        BinarySearchTreeNode node = root;
+
+        // 需要记录每一个经过的节点
+        LinkedList<BinarySearchTreeNode> stack = new LinkedList<>();
+        while (node != null || !stack.isEmpty()) {
+            if (node != null) {
+                stack.push(node);
+                node = node.left; // 向左走
+            } else {
+                BinarySearchTreeNode pop = stack.pop();// 弹栈
+                // 值小于key，记录下来
+                if (pop.key < key) {
+                    result.add(pop.value);
+                } else {
+                    break; // 直接出去，因为这个是顺序的，如果比key大了，后面都比key大了
+                }
+                // 处理右边的节点
+                node = pop.right;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 找到比 key 大的所有节点
+     */
+    public List<Object> greater(int key) {
+        ArrayList<Object> result = new ArrayList<>();
+        BinarySearchTreeNode node = root;
+
+        // 需要记录每一个经过的节点
+        LinkedList<BinarySearchTreeNode> stack = new LinkedList<>();
+        while (node != null || !stack.isEmpty()) {
+            if (node != null) {
+                stack.push(node);
+                node = node.left; // 向左走
+            } else {
+                BinarySearchTreeNode pop = stack.pop();// 弹栈
+                // 处理值
+                if (pop.key > key) {
+                    result.add(pop.value);
+                } // 要一直遍历到最后
+                // 处理右边的节点
+                node = pop.right;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 找到大于k1，但是小于k2的所有值
+     */
+    public List<Object> between(int key1, int key2) {
+        ArrayList<Object> result = new ArrayList<>();
+        BinarySearchTreeNode node = root;
+
+        // 需要记录每一个经过的节点
+        LinkedList<BinarySearchTreeNode> stack = new LinkedList<>();
+        while (node != null || !stack.isEmpty()) {
+            if (node != null) {
+                stack.push(node);
+                node = node.left; // 向左走
+            } else {
+                BinarySearchTreeNode pop = stack.pop();// 弹栈
+                // 处理值
+                if (pop.key >= key1 && pop.key <= key2) {
+                    result.add(pop.value);
+                } else if (pop.key > key2) {
+                    // 退出
+                    break;
+                }
+                // 处理右边的节点
+                node = pop.right;
+            }
+        }
+        return result;
     }
 }
