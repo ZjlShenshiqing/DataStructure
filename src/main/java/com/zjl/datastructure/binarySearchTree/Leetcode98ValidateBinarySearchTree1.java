@@ -9,7 +9,7 @@ import java.util.LinkedList;
  * @date 2025/10/16 下午3:53
  * @description Leetcode98ValidateBinarySearchTree
  */
-public class Leetcode98ValidateBinarySearchTree {
+public class Leetcode98ValidateBinarySearchTree1 {
 
     public boolean isValidBST(TreeNode root) {
         TreeNode node = root;
