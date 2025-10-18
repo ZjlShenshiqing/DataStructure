@@ -7,6 +7,11 @@ package com.zjl.datastructure.avltree;
  */
 public class AVLTree {
 
+    /**
+     * 根节点
+     */
+    AVLNode root;
+
     static class AVLNode {
         /**
          * key,用来比较大小
@@ -204,5 +209,45 @@ public class AVLTree {
 
         // 平衡的情况
         return node;
+    }
+
+    /**
+     * 公开的插入方法：向 AVL 树中插入（或更新）一个键值对。
+     *
+     * @param key   要插入或更新的键（必须唯一）
+     * @param value 对应的值
+     */
+    public void put(int key, Object value) {
+        // 从根节点开始递归插入，并将返回的新根赋值给 root
+        // 这样可以处理根节点被旋转替换的情况（例如根失衡后旋转，新根不再是原来的 root）
+        root = doPut(root, key, value);
+    }
+
+    /**
+     * 递归插入方法：在以 node 为根的子树中插入键值对，并保持 AVL 树的平衡。
+     *
+     * @param node  当前子树的根节点
+     * @param key   要插入的键
+     * @param value 要插入的值
+     * @return      插入并平衡后的新子树根节点（可能因旋转而改变）
+     */
+    private AVLNode doPut(AVLNode node, int key, Object value) {
+        // 1. 找到空位，创建新节点
+        if (node == null) {
+            return new AVLNode(key, value);
+        }
+        // 2. key已经存在，更新就行
+        if (key == node.key) {
+            node.value = value;
+            return node;
+        }
+        // 3. 继续查找
+        if (key < node.key) {
+            node.left = doPut(node.left, key, value); // 向左
+        } else {
+            node.right = doPut(node.right, key, value); // 向右
+        }
+        updateHeight(node); // 更新节点高度
+        return balance(node); // 如果节点失衡了，调整一下节点的位置
     }
 }
