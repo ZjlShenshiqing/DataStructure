@@ -250,4 +250,70 @@ public class AVLTree {
         updateHeight(node); // 更新节点高度
         return balance(node); // 如果节点失衡了，调整一下节点的位置
     }
+
+    /**
+     * 公开的删除方法：从 AVL 树中删除指定键的节点。
+     *
+     * @param key 要删除的键
+     */
+    public void remove(int key) {
+        // 从根开始递归删除，并更新 root（因为根可能因旋转或删除而改变）
+        root = doRemove(root, key);
+    }
+
+    /**
+     * 递归删除方法：在以 node 为根的子树中删除指定键的节点，并保持 AVL 树的平衡。
+     *
+     * @param node 当前子树的根节点
+     * @param key  要删除的键
+     * @return 删除并重新平衡后的新子树根节点（可能因旋转或结构调整而改变）
+     */
+    private AVLNode doRemove(AVLNode node, int key) {
+        // node == null，不删
+        if (node == null) {
+            return null;
+        }
+        // 没找到key，继续往后找
+        if (key < node.key) {
+            node.left = doRemove(node.left, key);
+        } else if (key > node.key) {
+            node.right = doRemove(node.right, key);
+        } else {
+            // 找到key
+            // 没有孩子
+            if (node.left == null && node.right == null) {
+                return null;
+            }
+            // 只有右孩子
+            else if (node.left == null) {
+                node = node.right;
+            }
+            // 只有左孩子
+            else if (node.right == null) {
+                node = node.left;
+            } else {
+                // 如果两个孩子的情况，先删除后继节点
+                /**
+                 * 中序后继（in-order successor）：
+                 * - 是右子树中最小的节点（即右子树最左边的节点）
+                 * - 它的 key 刚好比当前节点大，且最多只有一个右孩子（无左孩子）
+                 * - 用它替换当前节点，能保持 BST 的有序性
+                 */
+                AVLNode s = node.right;
+                while (s.left != null) {
+                    s = s.left;
+                }
+
+                // 找到了后继节点, 删除后继节点在原来右子树的位置
+                s.right = doRemove(node.right, s.key);
+                // 更新左子树
+                s.left = node.left;
+                node = s; // 替代掉被删除的节点
+            }
+        }
+        // 更新高度
+        updateHeight(node);
+        // 失衡了要重新旋转
+        return balance(node);
+    }
 }
