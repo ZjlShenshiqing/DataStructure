@@ -132,6 +132,7 @@ public class MaxHeap {
             swap(max, parent); // 交换孩子和父亲的位置
             down(max); // 继续比较孩子和父亲，直到没有元素为止
         }
+        // 如果 max == parent，方法直接结束（无递归）→ 停止！
     }
 
     /**

@@ -16,6 +16,11 @@ public class ListNode {
         this.next = next;
     }
 
+    public ListNode(int val) {
+        this.val = val;
+    }
+
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder(64);
