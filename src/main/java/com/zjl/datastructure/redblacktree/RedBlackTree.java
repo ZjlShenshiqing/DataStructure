@@ -376,4 +376,224 @@ public class RedBlackTree {
             leftRotate(grandParent);
         }
     }
+    
+    public void remove(int key) {
+        Node deleted = find(key);
+        if (deleted == null) {
+            return;
+        }
+        doRemove(deleted);
+    }
+
+    private void doRemove(Node deleted) {
+        Node replaced = findReplaced(deleted); // 后继节点
+        Node parent = deleted.parent; // 父亲
+        // 没有孩子的情况
+        if (replaced == null) {
+            if (deleted == root) {
+                root = null;
+            } else {
+                // 删除是需要进行平衡调整的
+                // 删除节点和剩下节点都是黑, 剩下的节点是null, null默认是黑色
+                if (isBlack(deleted)) {
+                    // 复杂调整
+                    fixDoubleBlack(deleted);
+                } else {
+                    // 红色叶子，无需进行处理
+                }
+                if (deleted.isLeftChild()) {
+                    parent.left = null;
+                } else {
+                    parent.right = null;
+                }
+                deleted.parent = null;
+            }
+            return;
+        }
+
+        /**
+         * 有一个孩子的情况
+         * 注意如果只有一个孩子的话，那这个孩子是不可能再有任何子孩子的，要不然会触发不平衡，需要进行调整了
+         */
+        if (deleted.left == null || deleted.right == null) {
+            // 根节点只有一个孩子的情况
+            if (deleted == root) {
+                // 将要保留的那个子节点（replaced）的数据复制到根节点
+                root.key = replaced.key;
+                root.value = replaced.value;
+
+                // 清空根节点的左右子指针
+                // 这里断开原根节点对其子树的引用，避免悬挂指针或重复删除
+                root.left = null;
+                root.right = null;
+            } else {
+                if (deleted.isLeftChild()){
+                    parent.left = replaced;
+                } else {
+                    parent.right = replaced;
+                }
+                replaced.parent = parent;
+                deleted.left = deleted.right = deleted.parent = null;
+
+                if (isBlack(deleted) && isBlack(replaced)) {
+                    // 被删除的和删剩下的都是黑
+                    // 复杂处理
+                    fixDoubleBlack(replaced);
+                } else {
+                    // 删的是黑，剩下的是红色，那么剩下的这个红节点变黑就行
+                    replaced.color = Color.BLACK;
+                }
+            }
+            return;
+        }
+
+        /**
+         * 有两个孩子的情况 交换删除节点和后继节点的 key，value
+         * 这种技巧叫李代桃僵 李树代替桃树而死。原比喻兄弟互相爱护互相帮助。后转用来比喻互相顶替或代人受过。
+         *
+         * 这样：两个孩子 => 有一个孩子 或者 没有孩子的情况
+         */
+        // 先交换一下删除节点和后继节点
+        int tempKey = deleted.key;
+        deleted.key = replaced.key;
+        replaced.key = tempKey;
+
+        Object tempValue = deleted.value;
+        deleted.value = replaced.value;
+        replaced.value = tempValue;
+
+        // 递归处理，两个孩子的情况变成一个孩子或者没有孩子的情况
+        doRemove(replaced);
+    }
+
+    /**
+     * 遇到了双黑的情况，需要重新进行平衡调整
+     * @param node 待调整节点
+     */
+    private void fixDoubleBlack(Node node) {
+        if (node == root) {
+            return;
+        }
+        Node parent = node.parent;
+        Node sibling = node.sibling();
+        // case3: 被调整节点的兄弟为红，此时两个侄子定为黑
+        if (isRed(sibling)) { // 如果能进来，说明sibling节点必然是存在的
+            if (node.isLeftChild()) {
+                leftRotate(parent); // 进行左旋
+            } else {
+                rightRotate(parent);
+            }
+            // 保持颜色平衡
+            parent.color = Color.RED;
+            sibling.color = Color.BLACK;
+            // 进入case4或者5情况的处理
+            fixDoubleBlack(node);
+            return;
+        }
+        if (sibling != null) {
+            // case4: 被调整节点的兄弟为黑，两个侄子都为黑
+            /**
+             * 将兄弟变红，目的是将删除节点和兄弟那边的黑色高度同时减少 1
+             * 如果父亲是红，则需将父亲变为黑，避免红红，此时路径黑节点数目不变
+             * 如果父亲是黑，说明这条路径还是少黑，再次让父节点触发双黑，也就是递归，然后父亲节点再来走一次这些case看看咋变，如果还是不行就让爷爷走一遍
+             */
+            if (isBlack(sibling.left) && isBlack(sibling.right)) {
+                sibling.color = Color.RED;
+                if (isRed(parent)) {
+                    parent.color = Color.BLACK;
+                } else {
+                    fixDoubleBlack(parent);
+                }
+            }
+            // case5:被调整节点的兄弟为黑，但至少一个红侄子
+            else {
+                // LL的情况
+                if (sibling.isLeftChild() && isRed(sibling.left)) {
+                    // 右旋一次
+                    rightRotate(parent);
+                    sibling.left.color = Color.RED;
+                    sibling.color = parent.color;
+                    parent.color = Color.BLACK;
+                }
+                // LR的情况
+                else if (sibling.isLeftChild() && isRed(sibling.right)) {
+                    // TA要旋转上来，所以TA要变成父节点的颜色,先放上来是因为后面左右旋会导致其变化，这个sibling.right就为null了
+                    sibling.right.color = parent.color;
+                    // 先左旋
+                    leftRotate(sibling);
+                    // 再右旋
+                    rightRotate(parent);
+                    parent.color = Color.BLACK;
+                }
+                // RL的情况
+                else if (!sibling.isLeftChild() && isRed(sibling.left)) {
+                    sibling.left.color = parent.color;
+                    // 先进行右旋
+                    rightRotate(sibling);
+                    // 再进行左旋
+                    leftRotate(parent);
+                    parent.color = Color.BLACK;
+                }
+                // RR的情况
+                else {
+                    leftRotate(parent);
+                    sibling.right.color = Color.BLACK;
+                    sibling.color = parent.color;
+                    parent.color = Color.BLACK;
+                }
+            }
+        } else {
+            // 让父亲递归的去做判断
+            fixDoubleBlack(parent);
+        }
+    }
+
+    /**
+     * 查找删除节点
+     */
+    private Node find(int key) {
+        Node p = root;
+        while (p != null) {
+            if (key < p.key) {
+                p = p.left;
+            } else if (key > p.key) {
+                p = p.right;
+            } else {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 查找用于替代被删除节点的节点（replacement node）。
+     *
+     * 替代规则：
+     * - 如果被删节点是叶子 → 无需替代，返回 null；
+     * - 如果只有左子树或只有右子树 → 用存在的子树根替代；
+     * - 如果有两个子树 → 用“中序后继”替代。
+     *
+     * 注意：中序后继 = 右子树中的最左节点（即右子树中最小的节点）。
+     *
+     * @param deleted 被删除的节点
+     * @return 替代节点；若被删节点是叶子，返回 null
+     */
+    private Node findReplaced(Node deleted) {
+        // 被删节点是叶子节点
+        if (deleted.left == null && deleted.right == null) {
+            return null;
+        }
+        // 只有左子树/只有右子树
+        if (deleted.left == null) {
+            return deleted.right;
+        }
+        if (deleted.right == null) {
+            return deleted.left;
+        }
+        Node succeed = deleted.right;
+        while (succeed.left != null) {
+            succeed = succeed.left;
+        }
+        return succeed;
+    }
 }
