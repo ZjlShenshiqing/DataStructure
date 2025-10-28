@@ -392,4 +392,130 @@ public class BTree {
         // 插入位置是index+1，因为中间关键字已经插入到index位置
         parent.insertChild(right, index + 1);
     }
+
+    /**
+     * 删除key
+     * @param key 删除的key
+     */
+    public void remove(int key) {
+        doRemove(null, root,0, key);
+    }
+
+    /**
+     * 具体的删除实现
+     * @param index parent的index位置处的孩子是node
+     */
+    private void doRemove(Node parent, Node node, int index, int key) {
+        int i = 0;
+        while (i < node.keyNumber) {
+            if (node.keys[i] >= key) {
+                break;
+            }
+            i++;
+        }
+        if (node.isLeaf) {
+            // 退出循环时，i可能有两层含义
+            if (i < node.keyNumber && node.keys[i] == key) {
+                // case2情况：当前节点是叶子节点，找到了 -> 直接删除就行
+                // 一种是找到了，那这个i代表着被删除key的索引
+                node.removeKey(i);
+            } else {
+                // case1情况：当前节点是叶子节点，没找到 -> 直接返回就可以了
+                // 一种是没找到，这个i代表着要去第i个孩子中继续查找
+                return;
+            }
+        } else {
+            if (i < node.keyNumber && node.keys[i] == key) {
+                // case 4：当前节点是非叶子节点，找到了
+                // 一种是找到了，那这个i代表着被删除key的索引
+                // 先找到后继节点来进行替换
+                Node s = node.children[i + 1];   // 进入右子树（即 keys[i] 右边的第一个子树）
+                while (!s.isLeaf) {              // 沿着最左边的路径一直往下
+                    s = s.children[0];           // 直到找到最底层的叶子节点
+                }
+                int sKey = s.keys[0];            // 该叶子节点的第一个 key 就是后继（最小的大于 keys[i] 的 key）
+
+                // 用后继 key 替换当前要删除的 key
+                node.keys[i] = sKey;             // 现在树中不再有“原 key”，但多了一个“sKey”的副本（在内部节点）
+
+                // 递归删除叶子中的那个后继 key（真正的删除发生在叶子）
+                // 注意：后继 key 原本在右子树（children[i+1]）的某个叶子中
+                doRemove(node, node.children[i + 1], i + 1, sKey);
+            } else {
+                // case 3：当前节点是非叶子节点，没找到  -> 继续到孩子里面进行查找
+                // 一种是没找到，这个i代表着要去第i个孩子中继续查找
+                doRemove(node, node.children[i], i, key);
+            }
+        }
+        // 删除后 key 数目 < 下限（不平衡）, 需要进行平衡调整
+        if (node.keyNumber < MIN_KEY_NUMBER) {
+            // case5、6：删除后 key 数目 < 下限（不平衡）
+            balance(node, index, parent);
+        }
+    }
+
+    /**
+     * 删除后 key 数目 < 下限（不平衡）,需要平衡节点
+     *
+     * @param node   需要平衡的节点
+     * @param index  节点在负节点中的索引位置
+     * @param parent 需要平衡的节点的父节点
+     */
+    private void balance(Node node, int index, Node parent) {
+        // case6 根节点
+        if (node == root) {
+            if (root.keyNumber == 0 && root.children[0] != null) {
+                root = root.children[0];
+            }
+            return;
+        }
+        // 节点左边的兄弟
+        Node left = parent.childLeftSibling(index);
+        // 节点右边的兄弟
+        Node right = parent.childRightSibling(index);
+        // case 5-1 左边富裕，右旋
+        if (left != null && left.keyNumber > MIN_KEY_NUMBER) {
+            // 右旋的第一步，把父节点的分隔键先拿下来
+            node.insertKey(parent.keys[index - 1],0);
+            // 若非叶子，转移孩子：如果 `R` 不是叶子节点，它在 K_r 左侧的那个孩子树的指针，需要移动到 `L`，成为 `L` 的新最右侧子树指针
+            if (!left.isLeaf) {
+                // 左侧兄弟最右边的孩子加入到最左边去
+                node.insertChild(left.removeRightMostChild(), 0);
+            }
+            // 把左兄弟最右边的节点上移到父亲的分隔键那里（换爹）
+            parent.keys[index - 1] = left.removeLeftMostKey();
+            return;
+        }
+        // case 5-2 右边富裕，左旋
+        if (right != null && right.keyNumber > MIN_KEY_NUMBER) {
+            // 左旋的第一步，把父节点的分隔键先拿下来
+            node.insertKey(parent.keys[index], node.keyNumber);
+            // 若非叶子，转移孩子
+            if (!right.isLeaf) {
+                // 右侧兄弟最左边的孩子加入到最右边去
+                node.insertChild(right.removeLeftMostChild(), node.keyNumber + 1);
+            }
+            // 把右兄弟最左边的节点上移到父亲的分隔键那里（换爹）
+            parent.keys[index] = right.removeLeftMostKey();
+            return;
+        }
+        // case 5-3 两边都不够借，向左合并
+        if (left != null) {
+            // 向左兄弟这边合并
+            // 被调整节点从父节点这边删掉
+            parent.removeChild(index);
+            // 父节点的一个key合并到左兄弟这边
+            left.insertKey(parent.removeKey(index - 1), left.keyNumber);
+            // 待调整节点和TA的孩子都移动到左兄弟这边
+            node.moveToTarget(left);
+        } else {
+            // 向自己合并
+            // 被调整节点的右兄弟从父节点这边删掉
+            parent.removeChild(index + 1);
+            // 父节点的一个key合并到被调整节点这边
+            node.insertKey(parent.removeKey(index), left.keyNumber);
+            // 右兄弟和TA的孩子都移动到被调整节点这边
+            right.moveToTarget(node);
+        }
+    }
 }
