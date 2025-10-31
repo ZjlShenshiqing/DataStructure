@@ -1,5 +1,7 @@
 package com.zjl.datastructure.HashTable;
 
+import java.util.prefs.PreferenceChangeEvent;
+
 /**
  * 哈希表实现
  *
@@ -50,7 +52,7 @@ public class HashTable {
      * @param key  键
      * @return     值
      */
-    Object get(int hash, Object key) {
+    public Object get(int hash, Object key) {
         // 计算该哈希值在哈希表（table 数组）中的索引位置
         int index = hash & (table.length - 1);
         // 检查该索引位置是否为空（即没有发生哈希冲突或该位置从未插入数据）
@@ -68,6 +70,61 @@ public class HashTable {
         }
         // 遍历完整个链表仍未找到匹配的 key，说明该键不存在
         return null;
+    }
+
+    /**
+     * 获取value,哈希码自己自动生成
+     *
+     * @param key  键
+     * @return     值
+     */
+    public Object get(Object key) {
+        int hash = key.hashCode(); // 自动生成hash码
+        return get(hash, key);
+    }
+
+    /**
+     * 存入键和value,哈希码自己自动生成
+     *
+     * @param key  键
+     * @return     值
+     */
+    public void put(Object key, Object value) {
+        int hash = key.hashCode(); // 自动生成hash码
+        put(hash, key, value);
+    }
+
+    /**
+     * 删除键和value,哈希码自己自动生成
+     *
+     * @param key  键
+     * @return     值
+     */
+    public Object remove(Object key) {
+        int hash = key.hashCode(); // 自动生成hash码
+        return remove(hash, key);
+    }
+
+    public static void main(String[] args) {
+        String s1 = "bac";
+        String s2 = new String("abc");
+
+        System.out.println(s1.hashCode());
+        System.out.println(s2.hashCode());
+
+        // 原则：值相同的字符串生成相同的 hash 码, 尽量让值不同的字符串生成不同的 hash 码
+        /*
+            对于 abc  a * 100 + b * 10 + c
+            对于 bac  b * 100 + a * 10 + c
+         */
+        int hash = 0;
+        for (int i = 0; i < s1.length(); i++) {
+            char c = s1.charAt(i);
+            System.out.println((int) c);
+            // (a*10 + b)*10 + c  ==>  a*100 + b*10 + c  2^5
+            hash = (hash << 5) - hash + c;
+        }
+        System.out.println(hash);
     }
 
     /**
@@ -239,6 +296,4 @@ public class HashTable {
         // 遍历完整个链表仍未找到匹配的 key，说明该键不存在
         return null;
     }
-
-
 }
