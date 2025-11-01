@@ -12,11 +12,11 @@ public class BubbleSort {
     }
 
     /**
-     * 冒泡排序
+     * 冒泡排序 - 递归版
      * @param a 排序的数组
      * @param j 未排序区域的右边界
      */
-    private static void bubble(int[] a, int j) {
+    private static void bubbleByRecursion(int[] a, int j) {
         if (j == 0) {
             return;
         }
@@ -29,6 +29,31 @@ public class BubbleSort {
             }
         }
 
-        bubble(a, j - 1); // 进行第二轮比较
+        bubbleByRecursion(a, j - 1); // 进行第二轮比较
+    }
+
+    /**
+     * 冒泡排序
+     * @param a 排序的数组
+     * j: 未排序区域的右边界
+     */
+    private static void bubbleSort(int[] a) {
+        int j = a.length - 1;
+
+        while (true) {
+            int x = 0; // 记录最后一次交换索引的位置
+            for (int i = 0; i < j; i++) {
+                if (a[i] > a[i + 1]) {
+                    int tmp = a[i];
+                    a[i] = a[i + 1];
+                    a[i + 1] = tmp;
+                    x = i;
+                }
+            }
+            j = x;
+            if (j == 0) {
+                break;
+            }
+        }
     }
 }
