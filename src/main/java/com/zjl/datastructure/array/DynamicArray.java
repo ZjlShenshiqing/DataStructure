@@ -141,4 +141,10 @@ public class DynamicArray implements Iterable<Integer> {
             array = newArray;
         }
     }
+
+    public int[] array() {
+        int[] copy = new int[size];
+        System.arraycopy(array, 0, copy, 0, size);
+        return copy;
+    }
 }
