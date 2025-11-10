@@ -1,5 +1,6 @@
 package com.zjl.datastructure.graph;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -26,6 +27,48 @@ public class DFS {
 //        v6.edges = List.of(new Edge(v5));
 //
 //        dfs1(v1);
+    }
+    /**
+     * 深度优先搜索（DFS）迭代实现
+     * 使用显式栈代替递归调用栈，实现图的深度优先遍历
+     *
+     * @param v 起始顶点
+     */
+    private static void dfs2(Vertex v) {
+        // 1. 创建一个栈，用于模拟递归过程中的函数调用栈
+        LinkedList<Vertex> stack = new LinkedList<>();
+
+        // 2. 将起始顶点压入栈中，作为遍历的起点
+        stack.push(v);
+
+        // 3. 当栈不为空时，持续进行遍历
+        while (!stack.isEmpty()) {
+            // 4. 弹出栈顶顶点，作为当前要处理的顶点
+            // 这一步相当于递归中的“当前节点”
+            Vertex pop = stack.pop();
+
+            // 5. 标记当前顶点为已访问，防止重复访问
+            pop.visited = true;
+
+            // 6. 访问（处理）当前顶点，这里是打印顶点名称
+            System.out.println(pop.name);
+
+            // 7. 遍历当前顶点的所有邻接边，寻找下一个要访问的顶点
+            for (Edge edge : pop.edges) {
+                // 8. 获取边所连接的相邻顶点
+                Vertex neighbor = edge.linked;
+
+                // 9. 检查相邻顶点是否已经被访问过
+                if (!neighbor.visited) {
+                    // 10. 如果未被访问，则将其压入栈中
+                    // 这样在下一次循环时，会优先处理这个邻居（深度优先）
+                    stack.push(neighbor);
+                }
+                // 如果 neighbor 已被访问，则跳过，不入栈
+            }
+            // 继续 while 循环，处理下一个栈顶元素
+        }
+        // 栈为空时，说明所有可达顶点都已访问完毕，遍历结束
     }
 
     /**
