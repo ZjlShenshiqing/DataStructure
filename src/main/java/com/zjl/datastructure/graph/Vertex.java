@@ -20,9 +20,15 @@ public class Vertex {
      */
     List<Edge> edges;
 
-    // 拓扑排序相关
+    /**
+     * 入度
+     */
     int inDegree;
-    int status; // 状态 0-未访问 1-访问中 2-访问过，用在拓扑排序
+
+    /**
+     * 状态 0-未访问 1-访问中 2-访问过
+     */
+    int status;
 
     /**
      * 节点是否被访问
@@ -33,4 +39,8 @@ public class Vertex {
     private static final int INF = Integer.MAX_VALUE;
     int dist = INF;
     Vertex prev = null;
+
+    public Vertex(String name) {
+        this.name = name;
+    }
 }
