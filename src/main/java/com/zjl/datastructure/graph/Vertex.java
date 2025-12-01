@@ -1,6 +1,7 @@
 package com.zjl.datastructure.graph;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 顶点
@@ -35,12 +36,34 @@ public class Vertex {
      */
     boolean visited;
 
-    // 求解最短距离相关
+    /**
+     * 初始顶点距离：无穷大
+     */
     private static final int INF = Integer.MAX_VALUE;
+
+    /**
+     * 到各个顶点的距离
+     */
     int dist = INF;
+
+    /**
+     * 顶点的上一个节点
+     */
     Vertex prev = null;
 
     public Vertex(String name) {
         this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Vertex vertex = (Vertex) o;
+        return Objects.equals(name, vertex.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(name);
     }
 }

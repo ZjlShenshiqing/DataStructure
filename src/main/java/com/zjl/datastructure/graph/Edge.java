@@ -26,4 +26,8 @@ public class Edge {
         this.linked = linked;
         this.weight = weight;
     }
+
+    public Edge(int from, int to, int weight) {
+
+    }
 }
